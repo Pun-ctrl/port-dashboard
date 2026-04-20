@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>พอร์ตหุ้นอเมริกา</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',sans-serif;background:#0d0d0d;color:#e0e0e0;min-height:100vh;padding:0}
+
+/* TOP BAR */
+.topbar{background:#111;border-bottom:1px solid #222;padding:10px 24px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.topbar .logo{font-size:1rem;font-weight:700;color:#fff;display:flex;align-items:center;gap:8px}
+.badge{background:#f59e0b;color:#000;font-size:0.7rem;font-weight:700;padding:3px 10px;border-radius:20px}
+.topbar-right{margin-left:auto;font-size:0.75rem;color:#666}
+
+/* MAIN */
+.main{padding:20px 24px}
+.section-title{font-size:1.1rem;font-weight:600;color:#fff;margin-bottom:16px}
+
+/* SUMMARY STATS */
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
+.stat-card{background:#161616;border:1px solid #252525;border-radius:10px;padding:14px 16px}
+.stat-card .label{font-size:0.72rem;color:#666;margin-bottom:6px}
+.stat-card .value{font-size:1.2rem;font-weight:700;color:#fff}
+.stat-card .sub{font-size:0.78rem;margin-top:2px}
+.pos{color:#22c55e}.neg{color:#ef4444}
+
+/* LAYOUT */
+.layout{display:grid;grid-template-columns:340px 1fr;gap:20px;align-items:start}
+
+/* DONUT CARD */
+.donut-card{background:#161616;border:1px solid #252525;border-radius:14px;padding:20px}
+.donut-wrap{position:relative;width:200px;height:200px;margin:0 auto}
+.donut-center{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;pointer-events:none;width:120px}
+.donut-center .dc-label{font-size:0.7rem;color:#888}
+.donut-center .dc-val{font-size:1.35rem;font-weight:700;color:#fff;line-height:1.2}
+.donut-center .dc-pnl{font-size:0.8rem;font-weight:600;margin-top:2px}
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:16px;justify-content:center}
+.legend-item{display:flex;align-items:center;gap:5px;font-size:0.72rem;color:#aaa;cursor:pointer}
+.legend-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+
+/* TABLE CARD */
+.table-card{background:#161616;border:1px solid #252525;border-radius:14px;padding:20px;overflow-x:auto}
+.table-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px}
+.search-wrap{display:flex;gap:8px;align-items:center}
+.search-input{background:#111;border:1px solid #2a2a2a;border-radius:8px;padding:6px 12px;font-size:0.78rem;color:#ddd;outline:none;width:160px}
+.search-input::placeholder{color:#555}
+.currency-toggle{display:flex;gap:2px}
+.currency-btn{background:#1a1a1a;border:1px solid #2a2a2a;color:#888;font-size:0.7rem;padding:4px 10px;cursor:pointer;border-radius:4px;transition:.15s}
+.currency-btn.active{background:#f59e0b;border-color:#f59e0b;color:#000;font-weight:700}
+
+table{width:100%;border-collapse:collapse;font-size:0.82rem;min-width:600px}
+thead th{background:#0f0f0f;color:#555;font-weight:600;padding:10px 12px;text-align:left;border-bottom:1px solid #252525;white-space:nowrap}
+thead th.r{text-align:right}
+tbody tr{border-bottom:1px solid #1c1c1c;transition:background .12s;cursor:pointer}
+tbody tr:hover{background:#1c1c1c}
+td{padding:10px 12px;white-space:nowrap}
+td.r{text-align:right}
+.ticker-badge{display:inline-flex;align-items:center;gap:7px;font-weight:700;font-size:0.82rem;color:#e0e0e0}
+.ticker-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.alloc-cell{display:flex;align-items:center;justify-content:flex-end;gap:8px}
+.alloc-bar-bg{width:70px;height:5px;background:#2a2a2a;border-radius:3px;overflow:hidden}
+.alloc-bar{height:100%;border-radius:3px;transition:width .3s}
+.empty-row td{color:#444;text-align:center;padding:32px}
+
+/* RESPONSIVE */
+@media(max-width:900px){
+  .layout{grid-template-columns:1fr}
+  .stats-row{grid-template-columns:1fr 1fr}
+}
+@media(max-width:480px){.stats-row{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="logo">📊 พอร์ตหุ้นอเมริกา <span class="badge">On progress</span></div>
+  <div class="topbar-right" id="updateLabel">—</div>
+</div>
+
+<div class="main">
+  <div class="stats-row" id="statsRow">
+    <div class="stat-card"><div class="label">มูลค่ารวม (USD)</div><div class="value" id="sv1">—</div></div>
+    <div class="stat-card"><div class="label">กำไร/ขาดทุน</div><div class="value" id="sv2">—</div><div class="sub" id="sv2s">—</div></div>
+    <div class="stat-card"><div class="label">ต้นทุนรวม</div><div class="value" id="sv3">—</div></div>
+    <div class="stat-card"><div class="label">จำนวนหุ้น</div><div class="value" id="sv4">—</div><div class="sub" id="sv4s" style="color:#888">ตัว</div></div>
+  </div>
+
+  <div class="layout">
+    <!-- DONUT -->
+    <div class="donut-card">
+      <div class="section-title">สัดส่วนพอร์ต</div>
+      <div class="donut-wrap">
+        <canvas id="donut"></canvas>
+        <div class="donut-center">
+          <div class="dc-label">หุ้นทั้งหมด</div>
+          <div class="dc-val" id="dv">$0</div>
+          <div class="dc-pnl" id="dp">—</div>
+        </div>
+      </div>
+      <div class="legend" id="legend"></div>
+    </div>
+
+    <!-- TABLE -->
+    <div class="table-card">
+      <div class="table-header">
+        <div class="section-title" style="margin:0">หุ้นในพอร์ต</div>
+        <div class="search-wrap">
+          <input class="search-input" type="text" placeholder="ค้นหา Ticker..." id="searchInput" oninput="renderTable()">
+          <div class="currency-toggle">
+            <button class="currency-btn active" onclick="setCurr('USD')">USD</button>
+            <button class="currency-btn" onclick="setCurr('THB')">THB</button>
+          </div>
+        </div>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>สัญลักษณ์</th>
+            <th class="r">ราคาเฉลี่ย</th>
+            <th class="r">จำนวนหุ้น</th>
+            <th class="r">มูลค่า ▼</th>
+            <th class="r">กำไร/ขาดทุน</th>
+            <th class="r">สัดส่วน</th>
+          </tr>
+        </thead>
+        <tbody id="stockTbody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// DATA — อัปเดตโดย skill "port-screenshot" หรือแก้ด้วยตนเอง
+// ============================================================
+const stocks = [
+  // { ticker, avgPrice, shares, value, pnlPct, allocation }
+  // ตัวอย่าง (ลบออกและใส่ข้อมูลจริง หรือให้ skill อัปเดต):
+  { ticker:"NVDA", avgPrice:139.33, shares:257.74, value:50647.54, pnlPct:41.04, allocation:18.47 },
+  { ticker:"RKLB", avgPrice:30.31,  shares:372.81, value:26924.65, pnlPct:138.27,allocation:9.82  },
+  { ticker:"META", avgPrice:597.06, shares:28.50,  value:18879.15, pnlPct:10.96, allocation:6.89  },
+  { ticker:"AVGO", avgPrice:252.51, shares:42.03,  value:16005.41, pnlPct:50.80, allocation:5.84  },
+  { ticker:"TSM",  avgPrice:205.55, shares:39.18,  value:14885.82, pnlPct:84.82, allocation:5.43  },
+  { ticker:"LLY",  avgPrice:800.00, shares:12.00,  value:11070.00, pnlPct:15.31, allocation:4.04  },
+  { ticker:"NVO",  avgPrice:75.00,  shares:50.00,  value:1966.00,  pnlPct:-47.57,allocation:0.72  },
+];
+const USD_THB = 32.168; // อัตราแลกเปลี่ยน
+// ============================================================
+
+const COLORS=["#6366f1","#f59e0b","#10b981","#ef4444","#3b82f6","#a855f7","#f97316","#14b8a6","#ec4899","#84cc16","#06b6d4","#fb923c","#8b5cf6","#fbbf24","#34d399","#f43f5e","#60a5fa"];
+let currency = "USD";
+let chart;
+
+function setCurr(c){
+  currency=c;
+  document.querySelectorAll('.currency-btn').forEach(b=>b.classList.toggle('active', b.textContent===c));
+  renderAll();
+}
+
+function fx(v){ return currency==="THB" ? v*USD_THB : v; }
+function sym(){ return currency==="THB" ? "฿" : "$"; }
+function fmt(n,d=2){ return n==null?"—":n.toLocaleString("en-US",{minimumFractionDigits:d,maximumFractionDigits:d}); }
+
+function renderAll(){
+  const sorted=[...stocks].sort((a,b)=>b.value-a.value);
+  const totalVal=sorted.reduce((s,x)=>s+x.value,0);
+  const totalCost=sorted.reduce((s,x)=>s+(x.avgPrice*x.shares),0);
+  const pnl=totalVal-totalCost;
+  const pnlPct=totalCost>0?(pnl/totalCost)*100:0;
+  const pc=pnl>=0?"pos":"neg";
+  const sg=pnl>=0?"+":"";
+
+  document.getElementById("updateLabel").textContent="อัปเดตล่าสุด: "+new Date().toLocaleString("th-TH");
+  document.getElementById("sv1").textContent=sym()+fmt(fx(totalVal));
+  document.getElementById("sv2").innerHTML=`<span class="${pc}">${sg}${sym()}${fmt(fx(Math.abs(pnl)))}</span>`;
+  document.getElementById("sv2s").innerHTML=`<span class="${pc}">${sg}${fmt(pnlPct)}%</span>`;
+  document.getElementById("sv3").textContent=sym()+fmt(fx(totalCost));
+  document.getElementById("sv4").textContent=stocks.length;
+  document.getElementById("dv").textContent=sym()+fmt(fx(totalVal),0);
+  document.getElementById("dp").innerHTML=`<span class="${pc}">${sg}${fmt(pnlPct)}%</span>`;
+
+  renderDonut(sorted);
+  renderTable(sorted, totalVal);
+}
+
+function renderDonut(sorted){
+  const labels=sorted.map(s=>s.ticker);
+  const data=sorted.map(s=>s.allocation||s.value);
+  const colors=sorted.map((_,i)=>COLORS[i%COLORS.length]);
+  if(chart)chart.destroy();
+  chart=new Chart(document.getElementById("donut").getContext("2d"),{
+    type:"doughnut",
+    data:{labels,datasets:[{data,backgroundColor:colors,borderWidth:2,borderColor:"#0d0d0d",hoverOffset:5}]},
+    options:{cutout:"68%",plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` ${c.label}: ${fmt(c.parsed)}%`}}},animation:{duration:400}}
+  });
+  document.getElementById("legend").innerHTML=sorted.map((s,i)=>
+    `<div class="legend-item"><div class="legend-dot" style="background:${COLORS[i%COLORS.length]}"></div>${s.ticker}</div>`
+  ).join("");
+}
+
+function renderTable(sorted, totalVal){
+  const q=document.getElementById("searchInput").value.toUpperCase();
+  const rows=sorted.filter(s=>s.ticker.includes(q));
+  if(!rows.length){
+    document.getElementById("stockTbody").innerHTML=`<tr class="empty-row"><td colspan="7">ไม่พบหุ้นที่ค้นหา</td></tr>`;
+    return;
+  }
+  const maxAlloc=Math.max(...sorted.map(s=>s.allocation||1));
+  document.getElementById("stockTbody").innerHTML=rows.map((s,idx)=>{
+    const ci=sorted.indexOf(s);
+    const color=COLORS[ci%COLORS.length];
+    const pc2=s.pnlPct>=0?"pos":"neg";
+    const sg2=s.pnlPct>=0?"+":"";
+    const barW=Math.round(((s.allocation||0)/maxAlloc)*100);
+    const pnlUSD=(s.value-(s.avgPrice*s.shares));
+    return `<tr onclick="window.open('https://finance.yahoo.com/quote/${s.ticker}','_blank')">
+      <td style="color:#555">${idx+1}</td>
+      <td><div class="ticker-badge"><div class="ticker-dot" style="background:${color}"></div>${s.ticker}</div></td>
+      <td class="r">${sym()}${fmt(fx(s.avgPrice))}</td>
+      <td class="r">${fmt(s.shares)}</td>
+      <td class="r">${sym()}${fmt(fx(s.value))}</td>
+      <td class="r"><span class="${pc2}">${sg2}${sym()}${fmt(fx(Math.abs(pnlUSD)))}</span><br><span class="${pc2}" style="font-size:0.72rem">${sg2}${fmt(s.pnlPct)}%</span></td>
+      <td class="r"><div class="alloc-cell">${fmt(s.allocation||0)}%<div class="alloc-bar-bg"><div class="alloc-bar" style="width:${barW}%;background:${color}"></div></div></div></td>
+    </tr>`;
+  }).join("");
+}
+
+renderAll();
+</script>
+</body>
+</html>
