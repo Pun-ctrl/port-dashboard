@@ -18,6 +18,11 @@ body{font-family:'Segoe UI',sans-serif;background:#0d0d0d;color:#e0e0e0;min-heig
 .stock-select-wrap{margin-left:auto;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 .stock-select-wrap label{font-size:0.78rem;color:#888}
 select{background:#1a1a1a;border:1px solid #2a2a2a;color:#e0e0e0;padding:6px 10px;border-radius:8px;font-size:0.8rem;outline:none;cursor:pointer}
+.top-btn{background:#1a1a1a;border:1px solid #2a2a2a;color:#ccc;font-size:0.78rem;padding:6px 14px;border-radius:8px;cursor:pointer;transition:.15s;white-space:nowrap}
+.top-btn:hover{background:#2a2a2a;color:#fff}
+.top-btn.green{border-color:#22c55e;color:#22c55e}
+.top-btn.green:hover{background:#14532d;color:#4ade80}
+.save-status{font-size:0.7rem;color:#22c55e;opacity:0;transition:opacity .4s}
 
 /* MAIN LAYOUT */
 .main{display:grid;grid-template-columns:1fr 420px;gap:0;height:calc(100vh - 90px)}
@@ -56,6 +61,11 @@ select{background:#1a1a1a;border:1px solid #2a2a2a;color:#e0e0e0;padding:6px 10p
 .invest-input{background:#1a1a1a;border:1px solid #2a2a2a;border-radius:6px;padding:6px 10px;color:#e0e0e0;font-size:0.8rem;outline:none;text-align:right;width:100px}
 .calc-btn{background:#3b82f6;color:#fff;border:none;border-radius:8px;padding:8px 18px;font-size:0.82rem;font-weight:700;cursor:pointer;margin-top:10px;width:100%;transition:.15s}
 .calc-btn:hover{background:#2563eb}
+.save-row{display:flex;gap:8px;margin-top:10px}
+.save-local-btn{flex:1;background:#1a2a1a;border:1px solid #22c55e;color:#22c55e;border-radius:8px;padding:7px;font-size:0.8rem;font-weight:700;cursor:pointer;transition:.15s}
+.save-local-btn:hover{background:#14532d}
+.clear-btn{background:#1a1a1a;border:1px solid #555;color:#888;border-radius:8px;padding:7px 14px;font-size:0.78rem;cursor:pointer;transition:.15s}
+.clear-btn:hover{background:#2a1a1a;border-color:#ef4444;color:#ef4444}
 
 /* SR TABLE */
 .sr-table-wrap{padding:16px 20px;flex:1}
@@ -78,6 +88,25 @@ td.left{text-align:left;font-weight:700}
 .links-section{padding:14px 20px;border-top:1px solid #1e1e1e;display:flex;flex-wrap:wrap;gap:8px}
 .link-btn{display:inline-flex;align-items:center;gap:5px;background:#1a1a1a;border:1px solid #2a2a2a;color:#aaa;font-size:0.72rem;padding:5px 12px;border-radius:20px;text-decoration:none;transition:.15s}
 .link-btn:hover{background:#222;color:#fff;border-color:#444}
+
+/* NOTION MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:1000;display:none;align-items:center;justify-content:center}
+.modal-overlay.open{display:flex}
+.modal-box{background:#1a1a1a;border:1px solid #2a2a2a;border-radius:16px;padding:28px;width:480px;max-width:96vw}
+.modal-box h2{font-size:1rem;font-weight:700;color:#fff;margin-bottom:6px}
+.modal-box p{font-size:0.78rem;color:#888;margin-bottom:18px;line-height:1.5}
+.modal-label{font-size:0.78rem;color:#aaa;margin-bottom:6px;display:block}
+.modal-input{width:100%;background:#111;border:1px solid #333;border-radius:8px;padding:10px 14px;color:#fff;font-size:0.82rem;outline:none;font-family:monospace}
+.modal-input:focus{border-color:#3b82f6}
+.modal-actions{display:flex;gap:10px;margin-top:16px}
+.btn-primary{flex:1;background:#3b82f6;color:#fff;border:none;border-radius:8px;padding:10px;font-size:0.85rem;font-weight:700;cursor:pointer;transition:.15s}
+.btn-primary:hover{background:#2563eb}
+.btn-secondary{background:#111;border:1px solid #333;color:#aaa;border-radius:8px;padding:10px 18px;font-size:0.85rem;cursor:pointer;transition:.15s}
+.btn-secondary:hover{background:#1a1a1a;color:#fff}
+.notion-status{margin-top:12px;font-size:0.78rem;padding:10px 14px;border-radius:8px;display:none}
+.notion-status.ok{background:#14532d;color:#4ade80;border:1px solid #166534;display:block}
+.notion-status.err{background:#450a0a;color:#f87171;border:1px solid #7f1d1d;display:block}
+.notion-status.loading{background:#1e3a5f;color:#93c5fd;border:1px solid #1e40af;display:block}
 
 @media(max-width:900px){
   .main{grid-template-columns:1fr;height:auto}
@@ -102,7 +131,7 @@ td.left{text-align:left;font-weight:700}
         {"proName":"NYSE:LLY","title":"LLY"},
         {"proName":"NYSE:NVO","title":"NVO"},
         {"proName":"NASDAQ:MELI","title":"MELI"},
-        {"proName":"NASDAQ:NVDA","title":"SPY"},
+        {"proName":"AMEX:SPY","title":"SPY"},
         {"proName":"NASDAQ:QQQ","title":"QQQ"}
       ],
       "showSymbolLogo": true,
@@ -118,6 +147,7 @@ td.left{text-align:left;font-weight:700}
 <div class="topbar">
   <div class="title">📐 แนวรับแนวต้าน</div>
   <span class="badge">Real-time</span>
+  <span class="save-status" id="saveStatus">✓ บันทึกแล้ว</span>
   <div class="stock-select-wrap">
     <label>เลือกหุ้น:</label>
     <select id="stockSel" onchange="onStockChange()">
@@ -130,6 +160,7 @@ td.left{text-align:left;font-weight:700}
       <option value="NYSE:NVO"    data-ticker="NVO">NVO — Novo Nordisk</option>
       <option value="NASDAQ:MELI" data-ticker="MELI">MELI — MercadoLibre</option>
     </select>
+    <button class="top-btn green" onclick="openNotionModal()">⚙️ Notion</button>
   </div>
 </div>
 
@@ -164,7 +195,7 @@ td.left{text-align:left;font-weight:700}
     <!-- PRICE HEADER -->
     <div class="price-header">
       <div class="price-ticker" id="phTicker">NVDA</div>
-      <div style="color:#666;font-size:0.78rem;margin-top:2px">กรอก S/R แล้วกด คำนวณ</div>
+      <div style="color:#666;font-size:0.78rem;margin-top:2px" id="storageNote">กรอก S/R แล้วกด 💾 บันทึก — ระบบจำค่าแต่ละหุ้นแยกกัน</div>
     </div>
 
     <!-- INPUT SECTION -->
@@ -194,6 +225,11 @@ td.left{text-align:left;font-weight:700}
         <div class="sr-group"><label>S4</label><input class="sr-input s-field" type="number" id="S4" placeholder="—" step="0.01" oninput="calcTable()"></div>
         <div></div><div></div>
       </div>
+
+      <div class="save-row">
+        <button class="save-local-btn" onclick="saveCurrentSR()">💾 บันทึก S/R</button>
+        <button class="clear-btn" onclick="clearCurrentSR()">🗑 ล้าง</button>
+      </div>
     </div>
 
     <!-- SR CALCULATION TABLE -->
@@ -207,9 +243,36 @@ td.left{text-align:left;font-weight:700}
   </div>
 </div>
 
+<!-- NOTION MODAL -->
+<div class="modal-overlay" id="notionModal">
+  <div class="modal-box">
+    <h2>⚙️ เชื่อม Notion API</h2>
+    <p>ใส่ API Key จาก <a href="https://www.notion.so/my-integrations" target="_blank" style="color:#3b82f6">notion.so/my-integrations</a><br>
+    ระบบจะโหลด R1–S4 ของทุกหุ้นจาก database พอร์ตหุ้นอเมริกา</p>
+    <label class="modal-label">Notion API Key (secret_...)</label>
+    <input class="modal-input" type="password" id="notionKeyInput" placeholder="secret_xxxxxxxxxxxxxxxxxxxxxxxx">
+    <div class="notion-status" id="notionStatus"></div>
+    <div class="modal-actions">
+      <button class="btn-primary" onclick="loadFromNotion()">🔄 โหลดจาก Notion</button>
+      <button class="btn-secondary" onclick="closeNotionModal()">ปิด</button>
+    </div>
+    <div style="margin-top:14px;font-size:0.72rem;color:#555;line-height:1.6">
+      <b style="color:#666">วิธีสร้าง Integration:</b><br>
+      1. ไปที่ notion.so/my-integrations → "New integration"<br>
+      2. ตั้งชื่อ เช่น "Port Dashboard" → Create<br>
+      3. คัดลอก Internal Integration Secret มาวางที่นี่<br>
+      4. เปิด database พอร์ตหุ้นอเมริกา → Share → เพิ่ม integration
+    </div>
+  </div>
+</div>
+
 <script>
-// ===== DATA: แก้ไข S/R ของแต่ละหุ้นที่นี่ หรือให้ skill อัปเดต =====
-const stockData = {
+// ===== CONFIG =====
+const DB_ID = "12593b21061540c9976e1272ea6d45cd";
+const CORS_PROXY = "https://corsproxy.io/?";
+
+// ===== DEFAULT S/R DATA (ใช้ถ้าไม่มีใน localStorage) =====
+const defaultStockData = {
   "NASDAQ:NVDA": { ticker:"NVDA", entry:0, invest:1000, R1:0,R2:0,R3:0, S1:0,S2:0,S3:0,S4:0 },
   "NASDAQ:RKLB": { ticker:"RKLB", entry:0, invest:1000, R1:0,R2:0,R3:0, S1:0,S2:0,S3:0,S4:0 },
   "NASDAQ:META": { ticker:"META", entry:0, invest:1000, R1:0,R2:0,R3:0, S1:0,S2:0,S3:0,S4:0 },
@@ -221,34 +284,75 @@ const stockData = {
                    R1:2101.93, R2:2220.02, R3:2329.89,
                    S1:1927.94, S2:1883.04, S3:1750.88, S4:1602.40 },
 };
-// =====================================================================
 
+// ===== LOCAL STORAGE HELPERS =====
+function getSRKey(sym){ return "sr_" + sym.replace(/[^A-Z0-9]/g,"_"); }
+function getApiKey(){ return localStorage.getItem("notion_api_key_sr")||""; }
+function saveApiKey(k){ localStorage.setItem("notion_api_key_sr",k); }
+
+function loadSR(sym){
+  const raw = localStorage.getItem(getSRKey(sym));
+  if(raw){ try{ return JSON.parse(raw); }catch(e){} }
+  return defaultStockData[sym] || { ticker: sym.split(":")[1], entry:0, invest:1000, R1:0,R2:0,R3:0,S1:0,S2:0,S3:0,S4:0 };
+}
+
+function saveSR(sym, data){ localStorage.setItem(getSRKey(sym), JSON.stringify(data)); }
+
+function saveCurrentSR(){
+  const sel = document.getElementById("stockSel");
+  const sym = sel.value;
+  const d = {
+    ticker: sel.options[sel.selectedIndex].dataset.ticker,
+    entry: parseFloat(document.getElementById("entryPrice").value)||0,
+    invest: parseFloat(document.getElementById("investAmt").value)||1000,
+  };
+  ["R1","R2","R3","S1","S2","S3","S4"].forEach(k=>{
+    d[k] = parseFloat(document.getElementById(k).value)||0;
+  });
+  saveSR(sym, d);
+  // Flash save indicator
+  const el = document.getElementById("saveStatus");
+  el.style.opacity = "1";
+  setTimeout(()=>{ el.style.opacity="0"; }, 2000);
+}
+
+function clearCurrentSR(){
+  const sym = document.getElementById("stockSel").value;
+  localStorage.removeItem(getSRKey(sym));
+  ["entryPrice","investAmt","R1","R2","R3","S1","S2","S3","S4"].forEach(id=>{
+    const el = document.getElementById(id);
+    el.value = id==="investAmt" ? "1000" : "";
+  });
+  calcTable();
+}
+
+// ===== DISPLAY HELPERS =====
 function fmt(n,d=2){ return n==null||isNaN(n)?"—":n.toLocaleString("en-US",{minimumFractionDigits:d,maximumFractionDigits:d}); }
 
 function loadStock(sym){
-  const d=stockData[sym]||{};
-  document.getElementById("phTicker").textContent=d.ticker||sym;
-  document.getElementById("entryPrice").value=d.entry||"";
-  document.getElementById("investAmt").value=d.invest||1000;
+  const d = loadSR(sym);
+  document.getElementById("phTicker").textContent = d.ticker||sym;
+  document.getElementById("entryPrice").value = d.entry||"";
+  document.getElementById("investAmt").value = d.invest||1000;
   ["R1","R2","R3","S1","S2","S3","S4"].forEach(k=>{
-    const v=d[k]; document.getElementById(k).value=v&&v!==0?v:"";
+    const v=d[k]; document.getElementById(k).value = v&&v!==0 ? v : "";
   });
   // Update links
+  const ticker = d.ticker || sym.split(":")[1];
   const links=[
-    {label:"📈 TradingView",url:`https://www.tradingview.com/chart/?symbol=${sym}`},
-    {label:"📊 Yahoo Finance",url:`https://finance.yahoo.com/quote/${d.ticker}`},
-    {label:"🔍 Finviz",url:`https://finviz.com/quote.ashx?t=${d.ticker}`},
+    {label:"📈 TradingView", url:`https://www.tradingview.com/chart/?symbol=${sym}`},
+    {label:"📊 Yahoo Finance", url:`https://finance.yahoo.com/quote/${ticker}`},
+    {label:"🔍 Finviz", url:`https://finviz.com/quote.ashx?t=${ticker}`},
   ];
-  document.getElementById("linkSection").innerHTML=links.map(l=>
+  document.getElementById("linkSection").innerHTML = links.map(l=>
     `<a class="link-btn" href="${l.url}" target="_blank">${l.label}</a>`
   ).join("");
   calcTable();
 }
 
 function onStockChange(){
-  const sel=document.getElementById("stockSel");
-  const sym=sel.value;
-  // Update TradingView chart
+  const sel = document.getElementById("stockSel");
+  const sym = sel.value;
   if(typeof tvWidget!=="undefined"&&tvWidget.setSymbol){
     tvWidget.setSymbol(sym,"D",()=>{});
   }
@@ -275,7 +379,6 @@ function calcTable(){
   rHeaders.forEach((rk,i)=>html+=`<th class="r-header">${rk}<br><span style="font-weight:400;font-size:0.7rem">$${fmt(Rs[i])}</span></th>`);
   html+=`</tr></thead><tbody>`;
 
-  // Entry row if provided
   if(entry>0){
     html+=`<tr><td class="left"><span style="color:#3b82f6;font-weight:700">Entry</span><span class="s-price">$${fmt(entry)}</span></td>`;
     Rs.forEach(r=>{
@@ -304,8 +407,108 @@ function calcTable(){
   wrap.innerHTML=html;
 }
 
-// Init with first stock
+// ===== NOTION MODAL =====
+function openNotionModal(){
+  document.getElementById("notionModal").classList.add("open");
+  const saved = getApiKey();
+  if(saved) document.getElementById("notionKeyInput").value = saved;
+  document.getElementById("notionStatus").className = "notion-status";
+  document.getElementById("notionStatus").textContent = "";
+}
+function closeNotionModal(){ document.getElementById("notionModal").classList.remove("open"); }
+
+// Close modal on overlay click
+document.getElementById("notionModal").addEventListener("click", function(e){
+  if(e.target===this) closeNotionModal();
+});
+
+async function loadFromNotion(){
+  const key = document.getElementById("notionKeyInput").value.trim();
+  if(!key){ alert("กรุณาใส่ API Key ก่อน"); return; }
+  saveApiKey(key);
+
+  const statusEl = document.getElementById("notionStatus");
+  statusEl.className = "notion-status loading";
+  statusEl.textContent = "⏳ กำลังโหลดข้อมูลจาก Notion...";
+
+  try {
+    const url = CORS_PROXY + encodeURIComponent(
+      `https://api.notion.com/v1/databases/${DB_ID}/query`
+    );
+    const body = { page_size: 100 };
+    const resp = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Authorization": "Bearer " + key,
+        "Notion-Version": "2022-06-28",
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(body)
+    });
+
+    if(!resp.ok){
+      const err = await resp.json().catch(()=>({}));
+      throw new Error(err.message || `HTTP ${resp.status}`);
+    }
+
+    const data = await resp.json();
+    const results = data.results || [];
+    let updated = 0;
+
+    // Build ticker → sym map
+    const tickerToSym = {};
+    Object.entries(defaultStockData).forEach(([sym,d])=>{ tickerToSym[d.ticker]=sym; });
+
+    results.forEach(page=>{
+      const props = page.properties||{};
+      const titleArr = props["Ticker"]?.title || props["Name"]?.title || [];
+      const ticker = titleArr.map(t=>t.plain_text).join("").trim().toUpperCase();
+      if(!ticker) return;
+
+      const sym = tickerToSym[ticker];
+      if(!sym) return; // skip tickers not in our list
+
+      const numProp = (name) => {
+        const p = props[name];
+        return p?.number ?? 0;
+      };
+
+      const existing = loadSR(sym);
+      const updated_data = {
+        ...existing,
+        ticker,
+        R1: numProp("R1") || existing.R1,
+        R2: numProp("R2") || existing.R2,
+        R3: numProp("R3") || existing.R3,
+        S1: numProp("S1") || existing.S1,
+        S2: numProp("S2") || existing.S2,
+        S3: numProp("S3") || existing.S3,
+        S4: numProp("S4") || existing.S4,
+      };
+      saveSR(sym, updated_data);
+      updated++;
+    });
+
+    statusEl.className = "notion-status ok";
+    statusEl.textContent = `✅ โหลดสำเร็จ — อัปเดต ${updated} หุ้น`;
+
+    // Reload current stock
+    loadStock(document.getElementById("stockSel").value);
+
+  } catch(err){
+    statusEl.className = "notion-status err";
+    statusEl.textContent = "❌ เชื่อมต่อไม่ได้: " + err.message;
+    console.error(err);
+  }
+}
+
+// ===== INIT =====
 loadStock("NASDAQ:NVDA");
+// Restore API key hint in input if saved
+window.addEventListener("load", ()=>{
+  const saved = getApiKey();
+  if(saved) document.getElementById("storageNote").textContent = "✓ มี API Key บันทึกแล้ว — กด ⚙️ Notion เพื่อโหลดข้อมูล";
+});
 </script>
 </body>
 </html>

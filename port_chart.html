@@ -7,95 +7,105 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'Segoe UI',sans-serif;background:#0d0d0d;color:#e0e0e0;min-height:100vh;padding:0}
-
-/* TOP BAR */
-.topbar{background:#111;border-bottom:1px solid #222;padding:10px 24px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
-.topbar .logo{font-size:1rem;font-weight:700;color:#fff;display:flex;align-items:center;gap:8px}
-.badge{background:#f59e0b;color:#000;font-size:0.7rem;font-weight:700;padding:3px 10px;border-radius:20px}
-.topbar-right{margin-left:auto;font-size:0.75rem;color:#666}
-
-/* MAIN */
-.main{padding:20px 24px}
-.section-title{font-size:1.1rem;font-weight:600;color:#fff;margin-bottom:16px}
-
-/* SUMMARY STATS */
-.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
-.stat-card{background:#161616;border:1px solid #252525;border-radius:10px;padding:14px 16px}
-.stat-card .label{font-size:0.72rem;color:#666;margin-bottom:6px}
-.stat-card .value{font-size:1.2rem;font-weight:700;color:#fff}
-.stat-card .sub{font-size:0.78rem;margin-top:2px}
+body{font-family:'Segoe UI',sans-serif;background:#0d0d0d;color:#e0e0e0;min-height:100vh}
+.topbar{background:#111;border-bottom:1px solid #222;padding:10px 20px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.topbar .logo{font-size:1rem;font-weight:700;color:#fff}
+.badge{background:#f59e0b;color:#000;font-size:0.68rem;font-weight:700;padding:2px 9px;border-radius:20px}
+.topbar-actions{margin-left:auto;display:flex;gap:8px;align-items:center}
+.btn{padding:6px 14px;border-radius:8px;border:none;font-size:0.78rem;font-weight:600;cursor:pointer;transition:.15s}
+.btn-edit{background:#1d4ed8;color:#fff}.btn-edit:hover{background:#1e40af}
+.btn-notion{background:#2a2a2a;color:#aaa;border:1px solid #333}.btn-notion:hover{background:#333;color:#fff}
+.btn-save{background:#16a34a;color:#fff}.btn-save:hover{background:#15803d}
+.btn-cancel{background:#2a2a2a;color:#aaa;border:1px solid #333}.btn-cancel:hover{background:#333}
+.main{padding:16px 20px}
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px}
+.stat-card{background:#161616;border:1px solid #252525;border-radius:10px;padding:12px 14px}
+.stat-card .label{font-size:0.7rem;color:#666;margin-bottom:4px}
+.stat-card .value{font-size:1.15rem;font-weight:700;color:#fff}
+.stat-card .sub{font-size:0.75rem;margin-top:2px}
 .pos{color:#22c55e}.neg{color:#ef4444}
-
-/* LAYOUT */
-.layout{display:grid;grid-template-columns:340px 1fr;gap:20px;align-items:start}
-
-/* DONUT CARD */
-.donut-card{background:#161616;border:1px solid #252525;border-radius:14px;padding:20px}
-.donut-wrap{position:relative;width:200px;height:200px;margin:0 auto}
-.donut-center{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;pointer-events:none;width:120px}
-.donut-center .dc-label{font-size:0.7rem;color:#888}
-.donut-center .dc-val{font-size:1.35rem;font-weight:700;color:#fff;line-height:1.2}
-.donut-center .dc-pnl{font-size:0.8rem;font-weight:600;margin-top:2px}
-.legend{display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:16px;justify-content:center}
-.legend-item{display:flex;align-items:center;gap:5px;font-size:0.72rem;color:#aaa;cursor:pointer}
-.legend-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
-
-/* TABLE CARD */
-.table-card{background:#161616;border:1px solid #252525;border-radius:14px;padding:20px;overflow-x:auto}
-.table-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px}
-.search-wrap{display:flex;gap:8px;align-items:center}
-.search-input{background:#111;border:1px solid #2a2a2a;border-radius:8px;padding:6px 12px;font-size:0.78rem;color:#ddd;outline:none;width:160px}
-.search-input::placeholder{color:#555}
+.layout{display:grid;grid-template-columns:320px 1fr;gap:16px;align-items:start}
+.card{background:#161616;border:1px solid #252525;border-radius:12px;padding:18px}
+.card-title{font-size:0.85rem;font-weight:600;color:#aaa;margin-bottom:12px}
+.donut-wrap{position:relative;width:190px;height:190px;margin:0 auto}
+.donut-center{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;pointer-events:none;width:110px}
+.dc-label{font-size:0.68rem;color:#666}
+.dc-val{font-size:1.25rem;font-weight:700;color:#fff;line-height:1.2}
+.dc-pnl{font-size:0.78rem;font-weight:600;margin-top:2px}
+.legend{display:flex;flex-wrap:wrap;gap:5px 12px;margin-top:14px;justify-content:center}
+.legend-item{display:flex;align-items:center;gap:4px;font-size:0.7rem;color:#aaa}
+.legend-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.table-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px}
+.search-input{background:#111;border:1px solid #2a2a2a;border-radius:7px;padding:5px 10px;font-size:0.76rem;color:#ddd;outline:none;width:150px}
 .currency-toggle{display:flex;gap:2px}
-.currency-btn{background:#1a1a1a;border:1px solid #2a2a2a;color:#888;font-size:0.7rem;padding:4px 10px;cursor:pointer;border-radius:4px;transition:.15s}
-.currency-btn.active{background:#f59e0b;border-color:#f59e0b;color:#000;font-weight:700}
-
-table{width:100%;border-collapse:collapse;font-size:0.82rem;min-width:600px}
-thead th{background:#0f0f0f;color:#555;font-weight:600;padding:10px 12px;text-align:left;border-bottom:1px solid #252525;white-space:nowrap}
+.cur-btn{background:#1a1a1a;border:1px solid #2a2a2a;color:#666;font-size:0.68rem;padding:4px 9px;cursor:pointer;border-radius:4px}
+.cur-btn.active{background:#f59e0b;border-color:#f59e0b;color:#000;font-weight:700}
+table{width:100%;border-collapse:collapse;font-size:0.8rem;min-width:580px}
+thead th{background:#111;color:#555;font-weight:600;padding:9px 10px;text-align:left;border-bottom:1px solid #222;white-space:nowrap}
 thead th.r{text-align:right}
-tbody tr{border-bottom:1px solid #1c1c1c;transition:background .12s;cursor:pointer}
+tbody tr{border-bottom:1px solid #1c1c1c;cursor:pointer;transition:background .1s}
 tbody tr:hover{background:#1c1c1c}
-td{padding:10px 12px;white-space:nowrap}
-td.r{text-align:right}
-.ticker-badge{display:inline-flex;align-items:center;gap:7px;font-weight:700;font-size:0.82rem;color:#e0e0e0}
-.ticker-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
-.alloc-cell{display:flex;align-items:center;justify-content:flex-end;gap:8px}
-.alloc-bar-bg{width:70px;height:5px;background:#2a2a2a;border-radius:3px;overflow:hidden}
-.alloc-bar{height:100%;border-radius:3px;transition:width .3s}
-.empty-row td{color:#444;text-align:center;padding:32px}
+td{padding:9px 10px;white-space:nowrap}td.r{text-align:right}
+.ticker-badge{display:inline-flex;align-items:center;gap:6px;font-weight:700}
+.ticker-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+.bar-bg{width:60px;height:5px;background:#222;border-radius:3px;display:inline-block;vertical-align:middle;margin-left:5px}
+.bar-fill{height:100%;border-radius:3px}
+.notion-status{font-size:0.7rem;padding:2px 8px;border-radius:20px;background:#1a2a1a;color:#4ade80;border:1px solid #166534}
+.notion-status.off{background:#1a1a1a;color:#555;border-color:#333}
 
-/* RESPONSIVE */
-@media(max-width:900px){
-  .layout{grid-template-columns:1fr}
-  .stats-row{grid-template-columns:1fr 1fr}
-}
-@media(max-width:480px){.stats-row{grid-template-columns:1fr}}
+/* MODAL */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:1000;align-items:center;justify-content:center}
+.modal-overlay.open{display:flex}
+.modal{background:#161616;border:1px solid #2a2a2a;border-radius:14px;width:min(820px,95vw);max-height:88vh;overflow:hidden;display:flex;flex-direction:column}
+.modal-head{padding:16px 20px;border-bottom:1px solid #222;display:flex;align-items:center;justify-content:space-between}
+.modal-head h2{font-size:1rem;color:#fff;font-weight:600}
+.modal-body{overflow-y:auto;padding:16px 20px;flex:1}
+.modal-foot{padding:12px 20px;border-top:1px solid #222;display:flex;gap:8px;justify-content:flex-end}
+.modal-table{width:100%;border-collapse:collapse;font-size:0.78rem}
+.modal-table th{background:#111;color:#555;padding:8px 8px;text-align:left;border-bottom:1px solid #222;font-weight:600;white-space:nowrap}
+.modal-table td{padding:5px 4px;border-bottom:1px solid #1a1a1a}
+.edit-input{background:#111;border:1px solid #2a2a2a;border-radius:5px;padding:5px 7px;color:#e0e0e0;font-size:0.78rem;outline:none;width:100%}
+.edit-input:focus{border-color:#3b82f6}
+.del-btn{background:#7f1d1d;border:none;color:#f87171;border-radius:5px;padding:4px 8px;cursor:pointer;font-size:0.72rem}
+.del-btn:hover{background:#991b1b}
+.add-row-btn{background:#1a2a1a;border:1px dashed #166534;color:#4ade80;border-radius:8px;padding:7px;width:100%;margin-top:8px;cursor:pointer;font-size:0.78rem;font-weight:600}
+.add-row-btn:hover{background:#14532d}
+.notion-setup{background:#0f172a;border:1px solid #1e3a5f;border-radius:10px;padding:14px 16px;margin-bottom:16px}
+.notion-setup h3{font-size:0.82rem;color:#60a5fa;margin-bottom:6px}
+.notion-setup p{font-size:0.74rem;color:#64748b;line-height:1.5}
+.api-row{display:flex;gap:8px;margin-top:8px}
+.api-input{flex:1;background:#0f0f0f;border:1px solid #1e3a5f;border-radius:6px;padding:6px 10px;color:#e0e0e0;font-size:0.76rem;outline:none;font-family:monospace}
+.api-connect-btn{background:#1d4ed8;color:#fff;border:none;border-radius:6px;padding:6px 12px;font-size:0.75rem;font-weight:600;cursor:pointer;white-space:nowrap}
+.api-connect-btn:hover{background:#1e40af}
+@media(max-width:860px){.layout{grid-template-columns:1fr}.stats-row{grid-template-columns:1fr 1fr}}
 </style>
 </head>
 <body>
 
 <div class="topbar">
   <div class="logo">📊 พอร์ตหุ้นอเมริกา <span class="badge">On progress</span></div>
-  <div class="topbar-right" id="updateLabel">—</div>
+  <span class="notion-status off" id="notionStatus">● Notion: ยังไม่เชื่อม</span>
+  <div class="topbar-actions">
+    <span id="updateLabel" style="font-size:0.72rem;color:#555"></span>
+    <button class="btn btn-notion" onclick="openModal('notion-modal')">⚙️ เชื่อม Notion</button>
+    <button class="btn btn-edit" onclick="openModal('edit-modal')">✏️ แก้ไขหุ้น</button>
+  </div>
 </div>
 
 <div class="main">
-  <div class="stats-row" id="statsRow">
-    <div class="stat-card"><div class="label">มูลค่ารวม (USD)</div><div class="value" id="sv1">—</div></div>
+  <div class="stats-row">
+    <div class="stat-card"><div class="label">มูลค่ารวม</div><div class="value" id="sv1">—</div></div>
     <div class="stat-card"><div class="label">กำไร/ขาดทุน</div><div class="value" id="sv2">—</div><div class="sub" id="sv2s">—</div></div>
     <div class="stat-card"><div class="label">ต้นทุนรวม</div><div class="value" id="sv3">—</div></div>
-    <div class="stat-card"><div class="label">จำนวนหุ้น</div><div class="value" id="sv4">—</div><div class="sub" id="sv4s" style="color:#888">ตัว</div></div>
+    <div class="stat-card"><div class="label">จำนวน</div><div class="value" id="sv4">—</div><div class="sub" style="color:#888">ตัว</div></div>
   </div>
 
   <div class="layout">
-    <!-- DONUT -->
-    <div class="donut-card">
-      <div class="section-title">สัดส่วนพอร์ต</div>
-      <div class="donut-wrap">
-        <canvas id="donut"></canvas>
+    <div class="card">
+      <div class="card-title">สัดส่วนพอร์ต</div>
+      <div class="donut-wrap"><canvas id="donut"></canvas>
         <div class="donut-center">
-          <div class="dc-label">หุ้นทั้งหมด</div>
+          <div class="dc-label">มูลค่ารวม</div>
           <div class="dc-val" id="dv">$0</div>
           <div class="dc-pnl" id="dp">—</div>
         </div>
@@ -103,78 +113,224 @@ td.r{text-align:right}
       <div class="legend" id="legend"></div>
     </div>
 
-    <!-- TABLE -->
-    <div class="table-card">
+    <div class="card">
       <div class="table-header">
-        <div class="section-title" style="margin:0">หุ้นในพอร์ต</div>
-        <div class="search-wrap">
+        <div class="card-title" style="margin:0">หุ้นในพอร์ต</div>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
           <input class="search-input" type="text" placeholder="ค้นหา Ticker..." id="searchInput" oninput="renderTable()">
           <div class="currency-toggle">
-            <button class="currency-btn active" onclick="setCurr('USD')">USD</button>
-            <button class="currency-btn" onclick="setCurr('THB')">THB</button>
+            <button class="cur-btn active" onclick="setCurr('USD')">USD</button>
+            <button class="cur-btn" onclick="setCurr('THB')">THB</button>
           </div>
         </div>
       </div>
-      <table>
-        <thead>
-          <tr>
-            <th>#</th>
-            <th>สัญลักษณ์</th>
-            <th class="r">ราคาเฉลี่ย</th>
-            <th class="r">จำนวนหุ้น</th>
-            <th class="r">มูลค่า ▼</th>
-            <th class="r">กำไร/ขาดทุน</th>
-            <th class="r">สัดส่วน</th>
-          </tr>
-        </thead>
-        <tbody id="stockTbody"></tbody>
-      </table>
+      <div style="overflow-x:auto">
+        <table>
+          <thead><tr>
+            <th>#</th><th>สัญลักษณ์</th><th class="r">ราคาเฉลี่ย</th>
+            <th class="r">จำนวนหุ้น</th><th class="r">มูลค่า ▼</th>
+            <th class="r">กำไร/ขาดทุน</th><th class="r">สัดส่วน</th>
+          </tr></thead>
+          <tbody id="stockTbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- EDIT MODAL -->
+<div class="modal-overlay" id="edit-modal">
+  <div class="modal">
+    <div class="modal-head">
+      <h2>✏️ แก้ไขหุ้นในพอร์ต</h2>
+      <button class="btn btn-cancel" onclick="closeModal('edit-modal')">✕ ปิด</button>
+    </div>
+    <div class="modal-body">
+      <div style="overflow-x:auto">
+        <table class="modal-table">
+          <thead><tr>
+            <th>Ticker</th><th>ราคาเฉลี่ย ($)</th><th>จำนวนหุ้น</th>
+            <th>มูลค่าปัจจุบัน ($)</th><th>กำไร/ขาดทุน %</th><th>สัดส่วน %</th><th></th>
+          </tr></thead>
+          <tbody id="editTbody"></tbody>
+        </table>
+        <button class="add-row-btn" onclick="addRow()">+ เพิ่มหุ้นใหม่</button>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-cancel" onclick="closeModal('edit-modal')">ยกเลิก</button>
+      <button class="btn btn-save" onclick="saveEdits()">💾 บันทึก</button>
+    </div>
+  </div>
+</div>
+
+<!-- NOTION MODAL -->
+<div class="modal-overlay" id="notion-modal">
+  <div class="modal" style="max-width:520px">
+    <div class="modal-head">
+      <h2>⚙️ เชื่อมต่อ Notion</h2>
+      <button class="btn btn-cancel" onclick="closeModal('notion-modal')">✕ ปิด</button>
+    </div>
+    <div class="modal-body">
+      <div class="notion-setup">
+        <h3>วิธีสร้าง API Key (ทำครั้งเดียว)</h3>
+        <p>
+          1. ไปที่ <a href="https://www.notion.so/my-integrations" target="_blank" style="color:#60a5fa">notion.so/my-integrations</a><br>
+          2. กด "+ New integration" → ตั้งชื่อ "Port Dashboard" → Submit<br>
+          3. Copy "Internal Integration Token" (ขึ้นต้นด้วย ntn_...)<br>
+          4. ใน Notion เปิด database พอร์ตหุ้นอเมริกา → ⋯ → Connections → เชื่อม "Port Dashboard"<br>
+          5. วาง token ด้านล่าง แล้วกด เชื่อมต่อ
+        </p>
+      </div>
+      <div class="api-row">
+        <input class="api-input" type="password" id="apiKeyInput" placeholder="ntn_xxxxxxxxxxxxxxxxxxxx">
+        <button class="api-connect-btn" onclick="connectNotion()">🔗 เชื่อมต่อ</button>
+      </div>
+      <p style="font-size:0.72rem;color:#444;margin-top:8px">Token จะเซฟในเครื่องเท่านั้น ไม่ถูกส่งออกไปไหน</p>
+      <div id="notionTestResult" style="margin-top:10px;font-size:0.78rem"></div>
     </div>
   </div>
 </div>
 
 <script>
 // ============================================================
-// DATA — อัปเดตโดย skill "port-screenshot" หรือแก้ด้วยตนเอง
+// CONFIG
 // ============================================================
-const stocks = [
-  // { ticker, avgPrice, shares, value, pnlPct, allocation }
-  // ตัวอย่าง (ลบออกและใส่ข้อมูลจริง หรือให้ skill อัปเดต):
-  { ticker:"NVDA", avgPrice:139.33, shares:257.74, value:50647.54, pnlPct:41.04, allocation:18.47 },
-  { ticker:"RKLB", avgPrice:30.31,  shares:372.81, value:26924.65, pnlPct:138.27,allocation:9.82  },
-  { ticker:"META", avgPrice:597.06, shares:28.50,  value:18879.15, pnlPct:10.96, allocation:6.89  },
-  { ticker:"AVGO", avgPrice:252.51, shares:42.03,  value:16005.41, pnlPct:50.80, allocation:5.84  },
-  { ticker:"TSM",  avgPrice:205.55, shares:39.18,  value:14885.82, pnlPct:84.82, allocation:5.43  },
-  { ticker:"LLY",  avgPrice:800.00, shares:12.00,  value:11070.00, pnlPct:15.31, allocation:4.04  },
-  { ticker:"NVO",  avgPrice:75.00,  shares:50.00,  value:1966.00,  pnlPct:-47.57,allocation:0.72  },
-];
-const USD_THB = 32.168; // อัตราแลกเปลี่ยน
-// ============================================================
+const DB_ID = "e5a8c5ac-e27e-4561-894d-ea6f1b8bcd70"; // Notion data source ID
+const USD_THB = 32.168;
+const COLORS = ["#6366f1","#f59e0b","#10b981","#ef4444","#3b82f6","#a855f7","#f97316","#14b8a6","#ec4899","#84cc16","#06b6d4","#fb923c","#8b5cf6","#fbbf24","#34d399","#f43f5e","#60a5fa"];
 
-const COLORS=["#6366f1","#f59e0b","#10b981","#ef4444","#3b82f6","#a855f7","#f97316","#14b8a6","#ec4899","#84cc16","#06b6d4","#fb923c","#8b5cf6","#fbbf24","#34d399","#f43f5e","#60a5fa"];
+const DEFAULT_STOCKS = [
+  {ticker:"NVDA", avgPrice:139.33, shares:257.74, value:50647.54, pnlPct:41.04, allocation:18.47},
+  {ticker:"RKLB", avgPrice:30.31,  shares:372.81, value:26924.65, pnlPct:138.27,allocation:9.82},
+  {ticker:"META", avgPrice:597.06, shares:28.50,  value:18879.15, pnlPct:10.96, allocation:6.89},
+  {ticker:"AVGO", avgPrice:252.51, shares:42.03,  value:16005.41, pnlPct:50.80, allocation:5.84},
+  {ticker:"TSM",  avgPrice:205.55, shares:39.18,  value:14885.82, pnlPct:84.82, allocation:5.43},
+  {ticker:"LLY",  avgPrice:800.00, shares:12.00,  value:11070.00, pnlPct:15.31, allocation:4.04},
+  {ticker:"NVO",  avgPrice:75.00,  shares:50.00,  value:1966.00,  pnlPct:-47.57,allocation:0.72},
+];
+
+let stocks = [];
 let currency = "USD";
 let chart;
 
+// ============================================================
+// STORAGE
+// ============================================================
+function loadStocks() {
+  try {
+    const s = localStorage.getItem("port_stocks");
+    if (s) return JSON.parse(s);
+  } catch(e){}
+  return JSON.parse(JSON.stringify(DEFAULT_STOCKS));
+}
+function saveStocks() {
+  localStorage.setItem("port_stocks", JSON.stringify(stocks));
+}
+function getApiKey() { return localStorage.getItem("notion_api_key") || ""; }
+function saveApiKey(k) { localStorage.setItem("notion_api_key", k); }
+
+// ============================================================
+// NOTION API (via CORS proxy)
+// ============================================================
+const CORS_PROXY = "https://corsproxy.io/?";
+
+async function connectNotion() {
+  const key = document.getElementById("apiKeyInput").value.trim();
+  if (!key) return;
+  const res = document.getElementById("notionTestResult");
+  res.textContent = "กำลังทดสอบ...";
+  try {
+    const url = CORS_PROXY + encodeURIComponent(`https://api.notion.com/v1/databases/${DB_ID}`);
+    const r = await fetch(url, {
+      headers: {"Authorization":"Bearer "+key, "Notion-Version":"2022-06-28"}
+    });
+    if (r.ok) {
+      saveApiKey(key);
+      res.innerHTML = `<span style="color:#4ade80">✅ เชื่อมต่อสำเร็จ! โหลดข้อมูลจาก Notion...</span>`;
+      updateNotionStatus(true);
+      await loadFromNotion(key);
+      closeModal("notion-modal");
+    } else {
+      res.innerHTML = `<span style="color:#ef4444">❌ Token ไม่ถูกต้อง หรือยังไม่ได้แชร์ database กับ integration</span>`;
+    }
+  } catch(e) {
+    res.innerHTML = `<span style="color:#ef4444">❌ ไม่สามารถเชื่อมต่อได้: ${e.message}</span>`;
+  }
+}
+
+async function loadFromNotion(apiKey) {
+  try {
+    const url = CORS_PROXY + encodeURIComponent(`https://api.notion.com/v1/databases/${DB_ID}/query`);
+    const r = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Authorization": "Bearer " + apiKey,
+        "Notion-Version": "2022-06-28",
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        filter: {property: "สถานะ", select: {equals: "ถือ"}},
+        sorts: [{property: "มูลค่า ($)", direction: "descending"}]
+      })
+    });
+    const data = await r.json();
+    if (!data.results) return;
+
+    const loaded = data.results.map(p => {
+      const props = p.properties;
+      const get = (name, type) => {
+        const prop = props[name];
+        if (!prop) return null;
+        if (type === "title") return prop.title?.[0]?.plain_text || "";
+        if (type === "number") return prop.number || 0;
+        return null;
+      };
+      return {
+        ticker:     get("Ticker", "title"),
+        avgPrice:   get("ราคาซื้อ", "number"),
+        shares:     get("จำนวนหุ้น", "number"),
+        value:      get("มูลค่า ($)", "number"),
+        pnlPct:     get("กำไร/ขาดทุน %", "number"),
+        allocation: get("สัดส่วน %", "number"),
+      };
+    }).filter(s => s.ticker);
+
+    if (loaded.length > 0) {
+      stocks = loaded;
+      saveStocks();
+      renderAll();
+      document.getElementById("updateLabel").textContent = "โหลดจาก Notion: " + new Date().toLocaleTimeString("th-TH");
+    }
+  } catch(e) { console.error("Notion load error:", e); }
+}
+
+function updateNotionStatus(on) {
+  const el = document.getElementById("notionStatus");
+  if (on) { el.textContent = "● Notion: เชื่อมแล้ว"; el.classList.remove("off"); }
+  else     { el.textContent = "● Notion: ยังไม่เชื่อม"; el.classList.add("off"); }
+}
+
+// ============================================================
+// RENDER
+// ============================================================
+function fmt(n,d=2){ return n==null||isNaN(n)?"—":Number(n).toLocaleString("en-US",{minimumFractionDigits:d,maximumFractionDigits:d}); }
+function fx(v){ return currency==="THB"?v*USD_THB:v; }
+function sym(){ return currency==="THB"?"฿":"$"; }
 function setCurr(c){
   currency=c;
-  document.querySelectorAll('.currency-btn').forEach(b=>b.classList.toggle('active', b.textContent===c));
+  document.querySelectorAll(".cur-btn").forEach(b=>b.classList.toggle("active",b.textContent===c));
   renderAll();
 }
 
-function fx(v){ return currency==="THB" ? v*USD_THB : v; }
-function sym(){ return currency==="THB" ? "฿" : "$"; }
-function fmt(n,d=2){ return n==null?"—":n.toLocaleString("en-US",{minimumFractionDigits:d,maximumFractionDigits:d}); }
-
 function renderAll(){
   const sorted=[...stocks].sort((a,b)=>b.value-a.value);
-  const totalVal=sorted.reduce((s,x)=>s+x.value,0);
-  const totalCost=sorted.reduce((s,x)=>s+(x.avgPrice*x.shares),0);
+  const totalVal=sorted.reduce((s,x)=>s+(x.value||0),0);
+  const totalCost=sorted.reduce((s,x)=>s+((x.avgPrice||0)*(x.shares||0)),0);
   const pnl=totalVal-totalCost;
   const pnlPct=totalCost>0?(pnl/totalCost)*100:0;
-  const pc=pnl>=0?"pos":"neg";
-  const sg=pnl>=0?"+":"";
+  const pc=pnl>=0?"pos":"neg"; const sg=pnl>=0?"+":"";
 
-  document.getElementById("updateLabel").textContent="อัปเดตล่าสุด: "+new Date().toLocaleString("th-TH");
   document.getElementById("sv1").textContent=sym()+fmt(fx(totalVal));
   document.getElementById("sv2").innerHTML=`<span class="${pc}">${sg}${sym()}${fmt(fx(Math.abs(pnl)))}</span>`;
   document.getElementById("sv2s").innerHTML=`<span class="${pc}">${sg}${fmt(pnlPct)}%</span>`;
@@ -183,53 +339,88 @@ function renderAll(){
   document.getElementById("dv").textContent=sym()+fmt(fx(totalVal),0);
   document.getElementById("dp").innerHTML=`<span class="${pc}">${sg}${fmt(pnlPct)}%</span>`;
 
-  renderDonut(sorted);
-  renderTable(sorted, totalVal);
-}
-
-function renderDonut(sorted){
-  const labels=sorted.map(s=>s.ticker);
-  const data=sorted.map(s=>s.allocation||s.value);
-  const colors=sorted.map((_,i)=>COLORS[i%COLORS.length]);
+  // Donut
   if(chart)chart.destroy();
   chart=new Chart(document.getElementById("donut").getContext("2d"),{
     type:"doughnut",
-    data:{labels,datasets:[{data,backgroundColor:colors,borderWidth:2,borderColor:"#0d0d0d",hoverOffset:5}]},
-    options:{cutout:"68%",plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` ${c.label}: ${fmt(c.parsed)}%`}}},animation:{duration:400}}
+    data:{labels:sorted.map(s=>s.ticker),datasets:[{data:sorted.map(s=>s.allocation||1),backgroundColor:sorted.map((_,i)=>COLORS[i%COLORS.length]),borderWidth:2,borderColor:"#0d0d0d",hoverOffset:4}]},
+    options:{cutout:"68%",plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` ${c.label}: ${fmt(c.parsed)}%`}}},animation:{duration:300}}
   });
   document.getElementById("legend").innerHTML=sorted.map((s,i)=>
     `<div class="legend-item"><div class="legend-dot" style="background:${COLORS[i%COLORS.length]}"></div>${s.ticker}</div>`
   ).join("");
+  renderTable(sorted);
 }
 
-function renderTable(sorted, totalVal){
-  const q=document.getElementById("searchInput").value.toUpperCase();
-  const rows=sorted.filter(s=>s.ticker.includes(q));
-  if(!rows.length){
-    document.getElementById("stockTbody").innerHTML=`<tr class="empty-row"><td colspan="7">ไม่พบหุ้นที่ค้นหา</td></tr>`;
-    return;
-  }
-  const maxAlloc=Math.max(...sorted.map(s=>s.allocation||1));
+function renderTable(sorted){
+  const q=(document.getElementById("searchInput").value||"").toUpperCase();
+  const rows=sorted.filter(s=>s.ticker.toUpperCase().includes(q));
+  const maxA=Math.max(...sorted.map(s=>s.allocation||1),1);
+  if(!rows.length){document.getElementById("stockTbody").innerHTML=`<tr><td colspan="7" style="color:#444;text-align:center;padding:24px">ไม่พบหุ้น</td></tr>`;return;}
   document.getElementById("stockTbody").innerHTML=rows.map((s,idx)=>{
-    const ci=sorted.indexOf(s);
-    const color=COLORS[ci%COLORS.length];
-    const pc2=s.pnlPct>=0?"pos":"neg";
-    const sg2=s.pnlPct>=0?"+":"";
-    const barW=Math.round(((s.allocation||0)/maxAlloc)*100);
-    const pnlUSD=(s.value-(s.avgPrice*s.shares));
+    const ci=sorted.indexOf(s); const color=COLORS[ci%COLORS.length];
+    const pc2=s.pnlPct>=0?"pos":"neg"; const sg2=s.pnlPct>=0?"+":"";
+    const pnlUSD=(s.value||0)-((s.avgPrice||0)*(s.shares||0));
+    const barW=Math.round(((s.allocation||0)/maxA)*100);
     return `<tr onclick="window.open('https://finance.yahoo.com/quote/${s.ticker}','_blank')">
       <td style="color:#555">${idx+1}</td>
-      <td><div class="ticker-badge"><div class="ticker-dot" style="background:${color}"></div>${s.ticker}</div></td>
-      <td class="r">${sym()}${fmt(fx(s.avgPrice))}</td>
-      <td class="r">${fmt(s.shares)}</td>
-      <td class="r">${sym()}${fmt(fx(s.value))}</td>
-      <td class="r"><span class="${pc2}">${sg2}${sym()}${fmt(fx(Math.abs(pnlUSD)))}</span><br><span class="${pc2}" style="font-size:0.72rem">${sg2}${fmt(s.pnlPct)}%</span></td>
-      <td class="r"><div class="alloc-cell">${fmt(s.allocation||0)}%<div class="alloc-bar-bg"><div class="alloc-bar" style="width:${barW}%;background:${color}"></div></div></div></td>
+      <td><span class="ticker-badge"><span class="ticker-dot" style="background:${color}"></span>${s.ticker}</span></td>
+      <td class="r">${sym()}${fmt(fx(s.avgPrice||0))}</td>
+      <td class="r">${fmt(s.shares||0)}</td>
+      <td class="r">${sym()}${fmt(fx(s.value||0))}</td>
+      <td class="r"><span class="${pc2}">${sg2}${sym()}${fmt(fx(Math.abs(pnlUSD)))}</span><br><span class="${pc2}" style="font-size:0.7rem">${sg2}${fmt(s.pnlPct||0)}%</span></td>
+      <td class="r">${fmt(s.allocation||0)}%<span class="bar-bg"><span class="bar-fill" style="width:${barW}%;background:${color}"></span></span></td>
     </tr>`;
   }).join("");
 }
 
+// ============================================================
+// EDIT MODAL
+// ============================================================
+let editStocks = [];
+
+function openModal(id){
+  if(id==="edit-modal"){
+    editStocks = JSON.parse(JSON.stringify(stocks));
+    renderEditTable();
+  }
+  document.getElementById(id).classList.add("open");
+}
+function closeModal(id){ document.getElementById(id).classList.remove("open"); }
+
+function renderEditTable(){
+  document.getElementById("editTbody").innerHTML = editStocks.map((s,i)=>`
+    <tr>
+      <td><input class="edit-input" value="${s.ticker}" oninput="editStocks[${i}].ticker=this.value.toUpperCase()" style="width:70px;text-transform:uppercase"></td>
+      <td><input class="edit-input" type="number" value="${s.avgPrice||''}" oninput="editStocks[${i}].avgPrice=+this.value" style="width:90px"></td>
+      <td><input class="edit-input" type="number" value="${s.shares||''}" oninput="editStocks[${i}].shares=+this.value" style="width:90px"></td>
+      <td><input class="edit-input" type="number" value="${s.value||''}" oninput="editStocks[${i}].value=+this.value" style="width:100px"></td>
+      <td><input class="edit-input" type="number" value="${s.pnlPct||''}" oninput="editStocks[${i}].pnlPct=+this.value" style="width:80px"></td>
+      <td><input class="edit-input" type="number" value="${s.allocation||''}" oninput="editStocks[${i}].allocation=+this.value" style="width:70px"></td>
+      <td><button class="del-btn" onclick="delRow(${i})">ลบ</button></td>
+    </tr>`).join("");
+}
+
+function addRow(){
+  editStocks.push({ticker:"",avgPrice:0,shares:0,value:0,pnlPct:0,allocation:0});
+  renderEditTable();
+}
+function delRow(i){ editStocks.splice(i,1); renderEditTable(); }
+function saveEdits(){
+  stocks = editStocks.filter(s=>s.ticker);
+  saveStocks();
+  renderAll();
+  closeModal("edit-modal");
+}
+
+// ============================================================
+// INIT
+// ============================================================
+stocks = loadStocks();
+const savedKey = getApiKey();
+if(savedKey){ updateNotionStatus(true); loadFromNotion(savedKey); }
 renderAll();
+document.getElementById("updateLabel").textContent = "เปิดล่าสุด: " + new Date().toLocaleString("th-TH");
 </script>
 </body>
 </html>
