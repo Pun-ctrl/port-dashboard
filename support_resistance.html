@@ -160,6 +160,7 @@ td.left{text-align:left;font-weight:700}
       <option value="NYSE:NVO"    data-ticker="NVO">NVO — Novo Nordisk</option>
       <option value="NASDAQ:MELI" data-ticker="MELI">MELI — MercadoLibre</option>
     </select>
+    <button class="top-btn" style="border-color:#16a34a;color:#4ade80" onclick="openSheetsModal()">📊 Sheets</button>
     <button class="top-btn green" onclick="openNotionModal()">⚙️ Notion</button>
   </div>
 </div>
@@ -240,6 +241,27 @@ td.left{text-align:left;font-weight:700}
 
     <!-- LINKS -->
     <div class="links-section" id="linkSection"></div>
+  </div>
+</div>
+
+<!-- SHEETS MODAL -->
+<div class="modal-overlay" id="sheetsModal">
+  <div class="modal-box">
+    <h2>📊 เชื่อมต่อ Google Sheets</h2>
+    <p>Publish Sheet เป็น CSV แล้ววาง URL — ระบบจะโหลด R1–S4 ของทุกหุ้นอัตโนมัติ<br>
+    <span style="color:#555;font-size:0.72rem">Header: Ticker, R1, R2, R3, S1, S2, S3, S4</span></p>
+    <div style="background:#1a2a1a;border:1px solid #22c55e33;border-radius:8px;padding:10px 14px;margin-bottom:14px;font-size:0.72rem;color:#4ade80">
+      💡 วิธี Publish:<br>
+      <span style="color:#666">File → Share → Publish to web → Sheet1 → CSV → Publish<br>
+      คัดลอก URL ที่ได้มาวางด้านล่าง</span>
+    </div>
+    <label class="modal-label">Google Sheets CSV URL</label>
+    <input class="modal-input" type="text" id="sheetsUrlSR" placeholder="https://docs.google.com/spreadsheets/d/e/.../pub?output=csv" style="font-size:0.72rem">
+    <div class="notion-status" id="sheetsStatusSR"></div>
+    <div class="modal-actions">
+      <button class="btn-primary" style="background:#16a34a" onclick="loadFromSheets()">📥 โหลด S/R จาก Sheets</button>
+      <button class="btn-secondary" onclick="closeSheetsModal()">ปิด</button>
+    </div>
   </div>
 </div>
 
@@ -511,6 +533,84 @@ async function loadFromNotion(){
     console.error(err);
   }
 }
+
+// ===== GOOGLE SHEETS =====
+function openSheetsModal(){
+  document.getElementById("sheetsModal").classList.add("open");
+  const saved = localStorage.getItem("sheets_url_sr");
+  if(saved) document.getElementById("sheetsUrlSR").value = saved;
+  document.getElementById("sheetsStatusSR").className = "notion-status";
+}
+function closeSheetsModal(){ document.getElementById("sheetsModal").classList.remove("open"); }
+document.getElementById("sheetsModal").addEventListener("click", function(e){ if(e.target===this) closeSheetsModal(); });
+
+function parseSRCSV(text) {
+  const lines = text.trim().split("\n").map(l => l.split(",").map(c => c.trim().replace(/^"|"$/g,"")));
+  if(lines.length < 2) return {};
+  // header: Ticker, R1, R2, R3, S1, S2, S3, S4
+  const result = {};
+  lines.slice(1).forEach(r => {
+    if(!r[0]) return;
+    result[r[0].toUpperCase()] = {
+      R1: parseFloat(r[1])||0, R2: parseFloat(r[2])||0, R3: parseFloat(r[3])||0,
+      S1: parseFloat(r[4])||0, S2: parseFloat(r[5])||0, S3: parseFloat(r[6])||0, S4: parseFloat(r[7])||0,
+    };
+  });
+  return result;
+}
+
+async function loadFromSheets() {
+  const url = document.getElementById("sheetsUrlSR").value.trim();
+  const statusEl = document.getElementById("sheetsStatusSR");
+  if(!url){ statusEl.className="notion-status err"; statusEl.textContent="กรุณาใส่ URL ก่อน"; return; }
+  statusEl.className = "notion-status loading"; statusEl.textContent = "⏳ กำลังโหลด...";
+  try {
+    const r = await fetch(url);
+    if(!r.ok) throw new Error(`HTTP ${r.status}`);
+    const text = await r.text();
+    const srMap = parseSRCSV(text);
+    const tickers = Object.keys(srMap);
+    if(!tickers.length) throw new Error("ไม่พบข้อมูล — ตรวจสอบ header: Ticker,R1,R2,R3,S1,S2,S3,S4");
+    // Save to localStorage per ticker
+    Object.entries(defaultStockData).forEach(([sym, d]) => {
+      const sr = srMap[d.ticker];
+      if(!sr) return;
+      const existing = loadSR(sym);
+      saveSR(sym, { ...existing, ...sr });
+    });
+    localStorage.setItem("sheets_url_sr", url);
+    statusEl.className = "notion-status ok";
+    statusEl.textContent = `✅ โหลดสำเร็จ — ${tickers.length} หุ้น`;
+    loadStock(document.getElementById("stockSel").value);
+  } catch(e) {
+    statusEl.className = "notion-status err";
+    statusEl.textContent = "❌ " + e.message;
+  }
+}
+
+// Auto-load Sheets on startup
+window.addEventListener("load", () => {
+  const savedUrl = localStorage.getItem("sheets_url_sr");
+  if(savedUrl) {
+    fetch(savedUrl).then(r=>r.text()).then(text=>{
+      const srMap = parseSRCSV(text);
+      Object.entries(defaultStockData).forEach(([sym, d]) => {
+        const sr = srMap[d.ticker];
+        if(!sr) return;
+        const existing = loadSR(sym);
+        saveSR(sym, {...existing, ...sr});
+      });
+      loadStock(document.getElementById("stockSel").value);
+      document.getElementById("storageNote").textContent = "✓ Sheets: โหลด S/R อัตโนมัติแล้ว";
+    }).catch(()=>{
+      const saved = getApiKey();
+      if(saved) document.getElementById("storageNote").textContent = "✓ มี API Key บันทึกแล้ว — กด ⚙️ Notion เพื่อโหลดข้อมูล";
+    });
+  } else {
+    const saved = getApiKey();
+    if(saved) document.getElementById("storageNote").textContent = "✓ มี API Key บันทึกแล้ว — กด ⚙️ Notion เพื่อโหลดข้อมูล";
+  }
+});
 
 // ===== INIT =====
 loadStock("NASDAQ:NVDA");

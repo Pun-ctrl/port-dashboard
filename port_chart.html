@@ -15,6 +15,7 @@ body{font-family:'Segoe UI',sans-serif;background:#0d0d0d;color:#e0e0e0;min-heig
 .btn{padding:6px 14px;border-radius:8px;border:none;font-size:0.78rem;font-weight:600;cursor:pointer;transition:.15s}
 .btn-edit{background:#1d4ed8;color:#fff}.btn-edit:hover{background:#1e40af}
 .btn-notion{background:#2a2a2a;color:#aaa;border:1px solid #333}.btn-notion:hover{background:#333;color:#fff}
+.btn-sheets{background:#14532d;color:#4ade80;border:1px solid #16a34a}.btn-sheets:hover{background:#166534;color:#86efac}
 .btn-save{background:#16a34a;color:#fff}.btn-save:hover{background:#15803d}
 .btn-cancel{background:#2a2a2a;color:#aaa;border:1px solid #333}.btn-cancel:hover{background:#333}
 .main{padding:16px 20px}
@@ -87,6 +88,7 @@ td{padding:9px 10px;white-space:nowrap}td.r{text-align:right}
   <span class="notion-status off" id="notionStatus">● Notion: ยังไม่เชื่อม</span>
   <div class="topbar-actions">
     <span id="updateLabel" style="font-size:0.72rem;color:#555"></span>
+    <button class="btn btn-sheets" onclick="openModal('sheets-modal')">📊 Google Sheets</button>
     <button class="btn btn-notion" onclick="openModal('notion-modal')">⚙️ เชื่อม Notion</button>
     <button class="btn btn-edit" onclick="openModal('edit-modal')">✏️ แก้ไขหุ้น</button>
   </div>
@@ -160,6 +162,40 @@ td{padding:9px 10px;white-space:nowrap}td.r{text-align:right}
     <div class="modal-foot">
       <button class="btn btn-cancel" onclick="closeModal('edit-modal')">ยกเลิก</button>
       <button class="btn btn-save" onclick="saveEdits()">💾 บันทึก</button>
+    </div>
+  </div>
+</div>
+
+<!-- SHEETS MODAL -->
+<div class="modal-overlay" id="sheets-modal">
+  <div class="modal" style="max-width:540px">
+    <div class="modal-head">
+      <h2>📊 เชื่อมต่อ Google Sheets</h2>
+      <button class="btn btn-cancel" onclick="closeModal('sheets-modal')">✕ ปิด</button>
+    </div>
+    <div class="modal-body">
+      <div class="notion-setup">
+        <h3>วิธีสร้าง Sheet (ทำครั้งเดียว)</h3>
+        <p>
+          1. เปิด <a href="https://sheets.new" target="_blank" style="color:#4ade80">sheets.new</a> สร้าง Sheet ใหม่<br>
+          2. แถวแรก (header) ใส่: <code style="background:#1a1a1a;padding:2px 6px;border-radius:4px;font-size:0.78rem">Ticker | ราคาซื้อ | จำนวนหุ้น | มูลค่า | กำไร% | สัดส่วน%</code><br>
+          3. กรอกข้อมูลหุ้นแต่ละแถว<br>
+          4. File → Share → <b>Publish to web</b> → เลือก Sheet1 → CSV → <b>Publish</b><br>
+          5. คัดลอก URL แล้ววางด้านล่าง
+        </p>
+        <div style="background:#1a2a1a;border:1px solid #22c55e33;border-radius:8px;padding:10px 14px;margin-top:8px;font-size:0.75rem;color:#4ade80">
+          💡 ตัวอย่างข้อมูลใน Sheet:<br>
+          <span style="color:#888">Ticker, ราคาซื้อ, จำนวนหุ้น, มูลค่า, กำไร%, สัดส่วน%<br>
+          NVDA, 139.33, 257.74, 50647.54, 41.04, 18.47<br>
+          META, 597.06, 28.50, 18879.15, 10.96, 6.89</span>
+        </div>
+      </div>
+      <div class="api-row" style="margin-top:14px">
+        <input class="api-input" type="text" id="sheetsUrlInput" placeholder="https://docs.google.com/spreadsheets/d/e/.../pub?output=csv" style="font-size:0.72rem">
+        <button class="api-connect-btn" style="background:#16a34a;white-space:nowrap" onclick="connectSheets()">📥 โหลดข้อมูล</button>
+      </div>
+      <p style="font-size:0.72rem;color:#444;margin-top:8px">URL จะเซฟในเครื่อง ครั้งหน้าโหลดอัตโนมัติ</p>
+      <div id="sheetsResult" style="margin-top:10px;font-size:0.78rem"></div>
     </div>
   </div>
 </div>
@@ -250,6 +286,65 @@ async function fetchNotion(targetUrl, options={}) {
   }
   throw lastErr || new Error("All proxies failed");
 }
+
+// ============================================================
+// GOOGLE SHEETS INTEGRATION
+// ============================================================
+function getSheetsUrl(){ return localStorage.getItem("sheets_url_port")||""; }
+function saveSheetsUrl(u){ localStorage.setItem("sheets_url_port", u); }
+
+function parseCSV(text) {
+  const lines = text.trim().split("\n").map(l => l.split(",").map(c => c.trim().replace(/^"|"$/g,"")));
+  if (lines.length < 2) return [];
+  // header: Ticker, ราคาซื้อ, จำนวนหุ้น, มูลค่า, กำไร%, สัดส่วน%
+  return lines.slice(1).filter(r => r[0]).map(r => ({
+    ticker:    r[0] || "",
+    avgPrice:  parseFloat(r[1]) || 0,
+    shares:    parseFloat(r[2]) || 0,
+    value:     parseFloat(r[3]) || 0,
+    pnlPct:    parseFloat(r[4]) || 0,
+    allocation:parseFloat(r[5]) || 0,
+  }));
+}
+
+async function connectSheets() {
+  const url = document.getElementById("sheetsUrlInput").value.trim();
+  const res = document.getElementById("sheetsResult");
+  if (!url) { res.innerHTML = `<span style="color:#ef4444">กรุณาใส่ URL ก่อน</span>`; return; }
+  res.innerHTML = `<span style="color:#60a5fa">⏳ กำลังโหลด...</span>`;
+  try {
+    const r = await fetch(url);
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    const text = await r.text();
+    const parsed = parseCSV(text);
+    if (!parsed.length) throw new Error("ไม่พบข้อมูล — ตรวจสอบ header และ URL อีกครั้ง");
+    saveSheetsUrl(url);
+    saveStocks(parsed);
+    stocks = parsed;
+    renderAll();
+    closeModal("sheets-modal");
+    document.getElementById("updateLabel").textContent = `✓ Sheets: ${parsed.length} หุ้น`;
+    res.innerHTML = `<span style="color:#4ade80">✅ โหลดสำเร็จ ${parsed.length} หุ้น</span>`;
+  } catch(e) {
+    res.innerHTML = `<span style="color:#ef4444">❌ ${e.message}</span>`;
+  }
+}
+
+// Auto-load Sheets on startup if URL saved
+window.addEventListener("DOMContentLoaded", () => {
+  const savedUrl = getSheetsUrl();
+  if (savedUrl) {
+    document.getElementById("sheetsUrlInput").value = savedUrl;
+    fetch(savedUrl).then(r => r.text()).then(text => {
+      const parsed = parseCSV(text);
+      if (parsed.length) {
+        stocks = parsed;
+        renderAll();
+        document.getElementById("updateLabel").textContent = `✓ Sheets: ${parsed.length} หุ้น`;
+      }
+    }).catch(()=>{});
+  }
+});
 
 async function connectNotion() {
   const key = document.getElementById("apiKeyInput").value.trim();
