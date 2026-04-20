@@ -233,7 +233,23 @@ function saveApiKey(k) { localStorage.setItem("notion_api_key", k); }
 // ============================================================
 // NOTION API (via CORS proxy)
 // ============================================================
-const CORS_PROXY = "https://corsproxy.io/?";
+// ---- CORS proxy fallback ----
+const PROXIES = [
+  u => "https://corsproxy.io/?" + encodeURIComponent(u),
+  u => "https://api.allorigins.win/raw?url=" + encodeURIComponent(u),
+  u => "https://thingproxy.freeboard.io/fetch/" + u,
+];
+
+async function fetchNotion(targetUrl, options={}) {
+  let lastErr;
+  for (const makeProxy of PROXIES) {
+    try {
+      const r = await fetch(makeProxy(targetUrl), options);
+      if (r.status !== 0) return r;
+    } catch(e) { lastErr = e; }
+  }
+  throw lastErr || new Error("All proxies failed");
+}
 
 async function connectNotion() {
   const key = document.getElementById("apiKeyInput").value.trim();
@@ -241,8 +257,7 @@ async function connectNotion() {
   const res = document.getElementById("notionTestResult");
   res.textContent = "กำลังทดสอบ...";
   try {
-    const url = CORS_PROXY + encodeURIComponent(`https://api.notion.com/v1/databases/${DB_ID}`);
-    const r = await fetch(url, {
+    const r = await fetchNotion(`https://api.notion.com/v1/databases/${DB_ID}`, {
       headers: {"Authorization":"Bearer "+key, "Notion-Version":"2022-06-28"}
     });
     if (r.ok) {
@@ -252,7 +267,8 @@ async function connectNotion() {
       await loadFromNotion(key);
       closeModal("notion-modal");
     } else {
-      res.innerHTML = `<span style="color:#ef4444">❌ Token ไม่ถูกต้อง หรือยังไม่ได้แชร์ database กับ integration</span>`;
+      const err = await r.json().catch(()=>({}));
+      res.innerHTML = `<span style="color:#ef4444">❌ ${err.message || "Token ไม่ถูกต้อง หรือยังไม่ได้ Connect database กับ integration"}</span>`;
     }
   } catch(e) {
     res.innerHTML = `<span style="color:#ef4444">❌ ไม่สามารถเชื่อมต่อได้: ${e.message}</span>`;
@@ -261,8 +277,8 @@ async function connectNotion() {
 
 async function loadFromNotion(apiKey) {
   try {
-    const url = CORS_PROXY + encodeURIComponent(`https://api.notion.com/v1/databases/${DB_ID}/query`);
-    const r = await fetch(url, {
+    const targetUrl = `https://api.notion.com/v1/databases/${DB_ID}/query`;
+    const r = await fetchNotion(targetUrl, {
       method: "POST",
       headers: {
         "Authorization": "Bearer " + apiKey,
